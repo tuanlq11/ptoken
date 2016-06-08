@@ -2,7 +2,9 @@
 
 namespace tuanlq11\token;
 
-use tuanlq11\token\signer\Signer;
+use Phalcon\Http\Request;
+use Phalcon\Mvc\Url;
+use tuanlq11\helper\Str;
 
 /**
  * Created by PhpStorm.
@@ -31,9 +33,13 @@ class Payload
     /** @var  string */
     protected $remember_token;
 
+    /** @var Request */
+    protected $request;
+
     /**
      * Payload constructor.
-     * @param int $exp
+     *
+     * @param int    $exp
      * @param string $uid
      * @param string $ip
      * @param string $salt
@@ -41,19 +47,23 @@ class Payload
      */
     public function __construct($uid = null, $exp = null, $ip = null, $domain = null, $salt = null, $remember_token = null)
     {
-        $this->exp = $exp;
-        $this->uid = $uid;
-        $this->ip = $ip;
-        $this->salt = $salt;
-        $this->domain = $domain;
+        $this->exp            = $exp;
+        $this->uid            = $uid;
+        $this->ip             = $ip;
+        $this->salt           = $salt;
+        $this->domain         = $domain;
         $this->remember_token = $remember_token;
+
+        $this->request = new Request();
 
         return $this;
     }
 
     /**
      * Get instance from array
+     *
      * @param $array
+     *
      * @return $this
      */
     public static function getInstance($array)
@@ -71,11 +81,13 @@ class Payload
 
     /**
      * @param $exp
+     *
      * @return $this
      */
     public function setExp($exp)
     {
         $this->exp = $exp;
+
         return $this;
     }
 
@@ -89,11 +101,13 @@ class Payload
 
     /**
      * @param $uid
+     *
      * @return $this
      */
     public function setUid($uid)
     {
         $this->uid = $uid;
+
         return $this;
     }
 
@@ -107,11 +121,13 @@ class Payload
 
     /**
      * @param $ip
+     *
      * @return $this
      */
     public function setIp($ip)
     {
         $this->ip = $ip;
+
         return $this;
     }
 
@@ -125,11 +141,13 @@ class Payload
 
     /**
      * @param $salt
+     *
      * @return $this
      */
     public function setSalt($salt)
     {
         $this->salt = $salt;
+
         return $this;
     }
 
@@ -143,11 +161,13 @@ class Payload
 
     /**
      * @param $domain
+     *
      * @return $this
      */
     public function setDomain($domain)
     {
         $this->domain = $domain;
+
         return $this;
     }
 
@@ -161,27 +181,30 @@ class Payload
 
     /**
      * @param $remember_token
+     *
      * @return $this
      */
     public function setRememberToken($remember_token)
     {
         $this->remember_token = $remember_token;
+
         return $this;
     }
 
-
     /**
      * Generate new salt
+     *
      * @param string $secret
+     *
      * @return $this
      */
     public function generateSalt($secret = '')
     {
         $data = [
-            'rnd0' => str_random(rand(16, 64)),
-            'time' => time(),
+            'rnd0'   => Str::str_random(rand(16, 64)),
+            'time'   => time(),
             'secret' => $secret,
-            'rnd1' => str_random(rand(16, 64))
+            'rnd1'   => Str::str_random(rand(16, 64)),
         ];
         shuffle($data);
         $middleCode = base64_encode(json_encode($data));
@@ -189,12 +212,15 @@ class Payload
         $key = base64_encode(json_encode($data));
 
         $this->salt = md5($this->getUid()) . hash_hmac('sha256', $middleCode, $key);
+
         return $this;
     }
 
     /**
      * Import data from array
+     *
      * @param $data
+     *
      * @return $this
      */
     public function fromArray($data)
@@ -212,20 +238,21 @@ class Payload
 
     /**
      * Convert to array
+     *
      * @return array
      */
     public function toArray($shuffle = true)
     {
-        $this->setIp($this->getIp() ? $this->getIp() : \Request::getClientIp());
-        $this->setDomain($this->getDomain() ? $this->getDomain() : \Request::root());
+        $this->setIp($this->getIp() ? $this->getIp() : $this->request->getClientAddress());
+        $this->setDomain($this->getDomain() ? $this->getDomain() : $_SERVER['SERVER_NAME']);
 
         $data = [
-            'uid' => $this->getUid(),
-            'exp' => $this->getExp(),
-            'ip' => $this->getIp(),
-            'domain' => $this->getDomain(),
-            'salt' => $this->getSalt(),
-            'remember_token' => $this->getRememberToken()
+            'uid'            => $this->getUid(),
+            'exp'            => $this->getExp(),
+            'ip'             => $this->getIp(),
+            'domain'         => $this->getDomain(),
+            'salt'           => $this->getSalt(),
+            'remember_token' => $this->getRememberToken(),
         ];
 
         if ($shuffle) {
@@ -237,11 +264,12 @@ class Payload
 
     /**
      * @param $array
+     *
      * @return array
      */
     private function shuffle_assoc($array)
     {
-        $result = [];
+        $result     = [];
         $array_keys = array_keys($array);
         shuffle($array_keys);
 
@@ -254,6 +282,7 @@ class Payload
 
     /**
      * Convert to json
+     *
      * @return string
      */
     public function toJSON($shuffle = true)
@@ -267,6 +296,7 @@ class Payload
     public function __toString()
     {
         $data = $this->toArray(false);
+
         return base64_encode(json_encode($data));
     }
 }

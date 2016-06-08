@@ -2,38 +2,45 @@
 
 namespace tuanlq11\token\middleware;
 
+use Phalcon\Mvc\User\Plugin;
 use tuanlq11\token\Token;
 use Closure;
-use Response;
 
 /**
- * Created by PhpStorm.
- * User: tuanlq11
- * Date: 9/11/15
- * Time: 1:07 PM
+ * Class TokenMiddleware
+ *
+ * GuardPlugin check token valid
+ *
+ * @package tuanlq11\token\middleware
  */
-class TokenMiddleware
+class TokenMiddleware extends Plugin
 {
-  public function handle($request, Closure $next)
-  {
-    $result = [
-      'error' => \Config::get('token.error-code'),
-      'message' => '',
-    ];
+    public function handle($request, Closure $next)
+    {
+        $this->response->setContentType("application/json");
 
-    $token = $request->get('token', false);
+        $result = [
+            'error'   => \Config::get('token.error-code'),
+            'message' => '',
+        ];
 
-    if (!$token) {
-      $result['message'] = 'Token is empty';
-      return Response::json($result);
+        $token = $request->get('token', false);
+
+        if (!$token) {
+            $result['message'] = 'Token is empty';
+
+            $this->response->setJsonContent($result)->send();
+
+            return false;
+        }
+
+        $tokenMgr = new Token();
+        if (!$tokenMgr->fromToken($token)) {
+            $result['message'] = 'Token is invalid or exired';
+
+            $this->response->setJsonContent($result)->send();
+
+            return false;
+        }
     }
-
-    $tokenMgr = new Token();
-    if (!$tokenMgr->fromToken($token)) {
-      $result['message'] = 'Token is invalid or exired';
-      return Response::json($result);
-    }
-
-    return $next($request);
-  }
 }

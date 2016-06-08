@@ -2,17 +2,12 @@
 
 namespace tuanlq11\token;
 
-use App\User;
-use Carbon\Carbon;
-use Illuminate\Contracts\Encryption\DecryptException;
 use tuanlq11\token\signer\Signer;
-use Cache;
-use Config;
-use Crypt;
 
 /**
  * Class Token
- * @author tuanlq11
+ *
+ * @author  tuanlq11
  * @package tuanlq11\token
  */
 class Token
@@ -172,11 +167,13 @@ class Token
 
     /**
      * @param $remember_token
+     *
      * @return $this
      */
     public function setRememberToken($remember_token)
     {
         $this->remember_token = $remember_token;
+
         return $this;
     }
 
@@ -198,29 +195,42 @@ class Token
 
     /**
      * Generate remember token
+     *
      * @param string $uid
+     *
      * @return string
      */
     public function generateRememberToken($uid = '')
     {
         $this->setRememberToken(md5(time() . $uid . str_random()));
+
         return $this->getRememberToken();
     }
 
-    function __construct()
+    /**
+     * Token constructor.
+     *
+     * @param $alg
+     * @param $identify
+     * @param $secret
+     * @param $ttl_blacklist
+     * @param $encrypt
+     */
+    function __construct($alg, $identify, $secret, $ttl, $ttl_blacklist, $encrypt)
     {
-        $this->setAlg(Config::get('token.alg'));
-        $this->setIdentify(Config::get('token.identify'));
-        $this->setSecret(Config::get('token.secret'));
-        $this->setTtl(Config::get('token.ttl'));
-        $this->setBlacklistTtl(Config::get('token.ttl_blacklist'));
-        $this->setEncrypt(Config::get('token.encrypt'));
+        $this->setAlg($alg);
+        $this->setIdentify($identify);
+        $this->setSecret($secret);
+        $this->setTtl($ttl);
+        $this->setBlacklistTtl($ttl_blacklist);
+        $this->setEncrypt($encrypt);
 
         return $this;
     }
 
     /**
      * Generate instance for static
+     *
      * @return Token
      */
     public static function getInstance()
@@ -234,8 +244,10 @@ class Token
 
     /**
      * Authenticate Credentials and generate token
+     *
      * @param $credentials
      * @param $identify
+     *
      * @return bool
      */
     public function attempt($credentials, $identify = 'email')
@@ -269,7 +281,9 @@ class Token
 
     /**
      * Response User from token
+     *
      * @param $token
+     *
      * @return bool|User
      */
     public function fromToken($token = null)
@@ -305,15 +319,17 @@ class Token
     /**
      * Response User && Remember Token from token
      * error code: 0 - pass; 1 - invalid; 2 - remember
+     *
      * @param $token
+     *
      * @return bool|User
      */
     public function fromTokenFull($token = null)
     {
-        $key = self::PREFIX_CACHE_KEY . $token;
+        $key    = self::PREFIX_CACHE_KEY . $token;
         $result = ['error' => 1, 'data' => null];
 
-        $token = $token ? $token : \Input::get('token');
+        $token          = $token ? $token : \Input::get('token');
         $remember_token = \Input::get('remember_token', false);
 
         try {
@@ -335,16 +351,19 @@ class Token
         $payload = $payloadResult['data'];
         if ($payloadResult['error'] == 0) {
             $result['error'] = 0;
-            $result['data'] = User::where($this->getIdentify(), '=', $payload->getUid())->first();
+            $result['data']  = User::where($this->getIdentify(), '=', $payload->getUid())->first();
+
             return $result;
         }
 
         /** Use remember token */
         if ($payloadResult['error'] == 2) {
             $result['error'] = 2;
-            $result['data'] = User::where($this->getIdentify(), '=', $payload->getUid())->first();
+            $result['data']  = User::where($this->getIdentify(), '=', $payload->getUid())->first();
+
             return $result;
         }
+
         /** End */
 
         return $result;
@@ -352,6 +371,7 @@ class Token
 
     /**
      * @param $token
+     *
      * @return bool
      */
     public function refresh($token)
@@ -360,18 +380,19 @@ class Token
 
         if ($valid['error'] != 1) {
             $user = $valid['data'];
-            $uid = $user->{$this->getIdentify()};
+            $uid  = $user->{$this->getIdentify()};
 
             /** Remember Token */
             $remember_token = $this->generateRememberToken($uid);
             /** End */
 
-            $payload = new Payload($uid, time() + $this->getTtl(), null, null, null, $remember_token);
+            $payload  = new Payload($uid, time() + $this->getTtl(), null, null, null, $remember_token);
             $newToken = $this->toToken($payload);
 
             // Blacklist
             $key = self::PREFIX_CACHE_KEY . $token;
             Cache::put($key, [], Carbon::now()->addSecond($this->getBlacklistTtl()));
+
             // End
 
             return $newToken;
@@ -382,6 +403,7 @@ class Token
 
     /**
      * @param $payload Payload
+     *
      * @return string
      */
     protected function toToken($payload)

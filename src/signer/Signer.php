@@ -2,6 +2,7 @@
 namespace tuanlq11\token\signer;
 
 use InvalidArgumentException;
+use Phalcon\Http\Request;
 use tuanlq11\token\Payload;
 use tuanlq11\token\Signer\OpenSSL\HMac;
 
@@ -29,8 +30,20 @@ class Signer
     /** @var  string */
     protected $signature;
 
+    /** @var Request */
+    protected $request;
+
+    /**
+     * Signer constructor.
+     */
+    public function __construct()
+    {
+        $this->request = new Request();
+    }
+
     /**
      * @param $token
+     *
      * @return $this
      */
     public static function getInstance($token)
@@ -48,11 +61,13 @@ class Signer
 
     /**
      * @param $encoder
+     *
      * @return $this
      */
     public function setEncoder($encoder)
     {
         $this->encoder = $encoder;
+
         return $this;
     }
 
@@ -66,11 +81,13 @@ class Signer
 
     /**
      * @param $header
+     *
      * @return $this
      */
     public function setHeader($header)
     {
         $this->header = $header;
+
         return $this;
     }
 
@@ -84,11 +101,13 @@ class Signer
 
     /**
      * @param $payload
+     *
      * @return $this
      */
     public function setPayload($payload)
     {
         $this->payload = $payload;
+
         return $this;
     }
 
@@ -98,7 +117,6 @@ class Signer
     public function getSignature()
     {
         return $this->signature;
-        return $this;
     }
 
     /**
@@ -111,7 +129,9 @@ class Signer
 
     /**
      * Convert from token to data
+     *
      * @param $token
+     *
      * @return bool
      */
     public function load($token)
@@ -139,7 +159,7 @@ class Signer
      */
     public function getEncoderInstance()
     {
-        $alg = $this->getHeader()['alg'];
+        $alg       = $this->getHeader()['alg'];
         $signerStr = sprintf('tuanlq11\\token\\signer\\openssl\\%s', strtoupper($alg));
         if (class_exists($signerStr)) {
             return new $signerStr;
@@ -150,17 +170,20 @@ class Signer
 
     /**
      * @param $key
+     *
      * @return string
      */
     public function sign($key)
     {
         $this->signature = $this->encoder->sign($this->getPayload()->toJSON(false), $key);
-        $this->signed = true;
+        $this->signed    = true;
+
         return $this->signature;
     }
 
     /**
      * Export token after sign
+     *
      * @return string
      */
     public function getTokenString()
@@ -176,15 +199,18 @@ class Signer
 
     /**
      * error code: 0 - pass; 1 - invalid; 2 - remember
-     * @param $secret
+     *
+     * @param  $secret
+     * @param  $remember_token mixed
+     *
      * @return array
      */
     public function verify($secret, $remember_token = '')
     {
-        $signVerify = $this->encoder->verify($secret, $this->getSignature(), $this->getPayload()->toJSON(false));
-        $expVerify = (is_numeric($this->getPayload()->getExp()) ? $this->getPayload()->getExp() : 0) > time();
-        $domainVerify = $this->getPayload()->getDomain() == \Request::root();
-        $ipVerify = $this->getPayload()->getIp() == \Request::getClientIp();
+        $signVerify     = $this->encoder->verify($secret, $this->getSignature(), $this->getPayload()->toJSON(false));
+        $expVerify      = (is_numeric($this->getPayload()->getExp()) ? $this->getPayload()->getExp() : 0) > time();
+        $domainVerify   = $this->getPayload()->getDomain() == $_SERVER['SERVER_NAME'];
+        $ipVerify       = $this->getPayload()->getIp() == $this->request->getClientAddress();
         $rememberVerify = ($remember_token == $this->getPayload()->getRememberToken());
 
         $result = ['error' => 1, 'data' => $this->getPayload()];
