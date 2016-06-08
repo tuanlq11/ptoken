@@ -24,7 +24,7 @@ class TokenAuthProvider extends Token
     public function __construct(DiInterface $di)
     {
         $config = new Yaml(__DIR__ . "/../config/config.yaml");
-        $config->merge($di["config"]->get("tuanlq11", new Config(["tuanlq11" => ["token" => []]])));
+        $config->tuanlq11->merge($di["config"]->get("tuanlq11", new Config(["tuanlq11" => ["token" => []]])));
 
         $this->cipher = new Cipher($config->tuanlq11->token->secret_cipher);
         $this->di     = $di;

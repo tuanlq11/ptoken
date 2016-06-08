@@ -21,7 +21,7 @@ class TokenMiddleware extends Plugin
     public function beforeExecuteRoute(Event $event, Dispatcher $dispatcher)
     {
         $config = new Yaml(__DIR__ . "/../config/config.yaml");
-        $config->merge($this->config->get("tuanlq11", new Config(["tuanlq11" => ["token" => []]])));
+        $config->tuanlq11->merge($this->config->get("tuanlq11", new Config(["tuanlq11" => ["token" => []]])));
 
         $this->response->setContentType("application/json");
 
