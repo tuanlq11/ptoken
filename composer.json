@@ -1,16 +1,17 @@
 {
   "name": "tuanlq11/token",
-  "description": "Laravel Token for remote access",
+  "description": "Phalcon Token Authenticate",
   "license": "MIT",
   "minimum-stability": "stable",
   "authors": [
     {
-      "name": "Le Quoc Tuan",
+      "name": "Fallen",
       "email": "tuanlq.it@gmail.com"
     }
   ],
   "require": {
-    "php": ">=5.4.0"
+    "php": ">=5.6.0",
+    "phalcon/devtools": "2.0.*"
   },
   "autoload": {
     "psr-4": {
