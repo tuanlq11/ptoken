@@ -1,8 +1,14 @@
 <?php
 namespace tuanlq11\token\provider;
 
+use Phalcon\Cache\Backend;
+use Phalcon\Cache\BackendInterface;
 use Phalcon\Config;
 use Phalcon\Config\Adapter\Yaml;
+use Phalcon\Di;
+use Phalcon\DiInterface;
+use Phalcon\Security;
+use tuanlq11\helper\Cipher;
 use tuanlq11\token\Token;
 
 /**
@@ -16,12 +22,14 @@ class TokenAuthProvider extends Token
     /**
      * TokenAuthServiceProvider constructor.
      *
-     * @param $globalConfig Config
      */
-    public function __construct($globalConfig)
+    public function __construct(DiInterface $di)
     {
         $config = new Yaml(__DIR__ . "/../config/config.yaml");
-        $config->merge($globalConfig->get("tuanlq11", new Config(["tuanlq11" => ["token" => []]])));
+        $config->merge($di["config"]->get("tuanlq11", new Config(["tuanlq11" => ["token" => []]])));
+
+        $this->cipher = new Cipher($config->tuanlq11->token->secret_cipher);
+        $this->di     = $di;
 
         return parent::__construct(
             $config->tuanlq11->token->alg,

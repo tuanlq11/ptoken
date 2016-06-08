@@ -2,6 +2,15 @@
 
 namespace tuanlq11\token;
 
+use Carbon\Carbon;
+use Phalcon\Cache\Backend;
+use Phalcon\Cache\BackendInterface;
+use Phalcon\DiInterface;
+use Phalcon\Exception;
+use Phalcon\Http\Request;
+use Phalcon\Security;
+use tuanlq11\helper\Cipher;
+use tuanlq11\helper\Str;
 use tuanlq11\token\signer\Signer;
 
 /**
@@ -38,6 +47,12 @@ class Token
 
     /** @var  bool */
     protected $encrypt;
+
+    /** @var  Cipher */
+    protected $cipher;
+
+    /** @var  DiInterface */
+    protected $di;
 
     /** Static prefix cache key */
     const PREFIX_CACHE_KEY = 'tuanlq11.token.blacklist.';
@@ -202,7 +217,7 @@ class Token
      */
     public function generateRememberToken($uid = '')
     {
-        $this->setRememberToken(md5(time() . $uid . str_random()));
+        $this->setRememberToken(md5(time() . $uid . Str::str_random()));
 
         return $this->getRememberToken();
     }
@@ -225,6 +240,8 @@ class Token
         $this->setBlacklistTtl($ttl_blacklist);
         $this->setEncrypt($encrypt);
 
+        $this->request = new Request();
+
         return $this;
     }
 
@@ -243,32 +260,14 @@ class Token
     }
 
     /**
-     * Authenticate Credentials and generate token
+     * Generate token from UID
      *
-     * @param $credentials
-     * @param $identify
+     * @param $uid mixed
      *
      * @return bool
      */
-    public function attempt($credentials, $identify = 'email')
+    public function attempt($uid)
     {
-        $identifyVal = isset($credentials[$identify]) ? $credentials[$identify] : null;
-        /** @var Collection $user */
-        $user = User::where($identify, '=', $identifyVal)->get();
-
-        if ($user->isEmpty()) {
-            return false;
-        }
-
-        /** @var User $user */
-        $user = $user->first();
-
-        if (!\Hash::check($credentials['password'], $user->password)) {
-            return false;
-        }
-
-        $uid = $user->{$this->getIdentify()};
-
         /** Remember Token */
         $remember_token = $this->generateRememberToken($uid);
         /** End */
@@ -284,21 +283,21 @@ class Token
      *
      * @param $token
      *
-     * @return bool|User
+     * @return bool
      */
     public function fromToken($token = null)
     {
-        $token = $token ? $token : \Input::get('token');
+        $token = $token ? $token : $this->request->get('token');
 
         try {
-            $token = $this->isEncrypt() ? Crypt::decrypt($token) : $token;
-        } catch (DecryptException $e) {
+            $token = $this->isEncrypt() ? $this->cipher->decrypt($token) : $token;
+        } catch (Exception $e) {
             return false;
         }
 
         $key = self::PREFIX_CACHE_KEY . $token;
 
-        if (Cache::has($key)) {
+        if ($this->di["cache"]->exists($key)) {
             return false;
         }
 
@@ -310,7 +309,7 @@ class Token
         /** @var Payload $payload */
         $payload = $result['data'];
         if ($result['error'] == 0) {
-            return User::where($this->getIdentify(), '=', $payload->getUid())->first();
+            return $payload->getUid();
         }
 
         return false;
@@ -322,23 +321,23 @@ class Token
      *
      * @param $token
      *
-     * @return bool|User
+     * @return bool
      */
     public function fromTokenFull($token = null)
     {
         $key    = self::PREFIX_CACHE_KEY . $token;
         $result = ['error' => 1, 'data' => null];
 
-        $token          = $token ? $token : \Input::get('token');
-        $remember_token = \Input::get('remember_token', false);
+        $token          = $token ? $token : $this->request->get('token');
+        $remember_token = $this->request->get('remember_token', null, false);
 
         try {
-            $token = $this->isEncrypt() ? Crypt::decrypt($token) : $token;
-        } catch (DecryptException $e) {
+            $token = $this->isEncrypt() ? $this->cipher->decrypt($token) : $token;
+        } catch (Exception $e) {
             return false;
         }
 
-        if (Cache::has($key)) {
+        if ($this->di["cache"]->exists($key)) {
             return false;
         }
 
@@ -351,7 +350,7 @@ class Token
         $payload = $payloadResult['data'];
         if ($payloadResult['error'] == 0) {
             $result['error'] = 0;
-            $result['data']  = User::where($this->getIdentify(), '=', $payload->getUid())->first();
+            $result['data']  = $payload->getUid();
 
             return $result;
         }
@@ -359,7 +358,7 @@ class Token
         /** Use remember token */
         if ($payloadResult['error'] == 2) {
             $result['error'] = 2;
-            $result['data']  = User::where($this->getIdentify(), '=', $payload->getUid())->first();
+            $result['data']  = $payload->getUid();
 
             return $result;
         }
@@ -391,7 +390,7 @@ class Token
 
             // Blacklist
             $key = self::PREFIX_CACHE_KEY . $token;
-            Cache::put($key, [], Carbon::now()->addSecond($this->getBlacklistTtl()));
+            $this->di["cache"]->save($key, [], Carbon::now()->addSecond($this->getBlacklistTtl()));
 
             // End
 
@@ -415,7 +414,7 @@ class Token
         $signer->sign($this->getSecret());
 
         $token = $signer->getTokenString();
-        $token = $this->isEncrypt() ? Crypt::encrypt($token) : $token;
+        $token = $this->isEncrypt() ? $this->cipher->encrypt($token) : $token;
 
         return $token;
     }
