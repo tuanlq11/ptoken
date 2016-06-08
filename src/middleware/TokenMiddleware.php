@@ -15,7 +15,7 @@ use Closure;
  */
 class TokenMiddleware extends Plugin
 {
-    public function handle($request, Closure $next)
+    public function beforeExecuteRoute(Event $event, Dispatcher $dispatcher)
     {
         $this->response->setContentType("application/json");
 
