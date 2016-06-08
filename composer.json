@@ -15,7 +15,7 @@
   },
   "autoload": {
     "psr-4": {
-      "tuanlq11\\token\\": "src/"
+      "tuanlq11\\ptoken\\": "src/"
     }
   }
 }
