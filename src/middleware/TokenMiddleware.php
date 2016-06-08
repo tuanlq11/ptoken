@@ -2,6 +2,8 @@
 
 namespace tuanlq11\token\middleware;
 
+use Phalcon\Dispatcher;
+use Phalcon\Events\Event;
 use Phalcon\Mvc\User\Plugin;
 use tuanlq11\token\Token;
 use Closure;
@@ -24,7 +26,7 @@ class TokenMiddleware extends Plugin
             'message' => '',
         ];
 
-        $token = $request->get('token', false);
+        $token = $this->request->get('token', false);
 
         if (!$token) {
             $result['message'] = 'Token is empty';
