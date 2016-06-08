@@ -1,5 +1,5 @@
 <?php
-namespace tuanlq11\token\provider;
+namespace tuanlq11\ptoken\provider;
 
 use Phalcon\Config;
 use Phalcon\Config\Adapter\Yaml;
@@ -7,13 +7,13 @@ use Phalcon\Di;
 use Phalcon\DiInterface;
 use Phalcon\Security;
 use tuanlq11\helper\Cipher;
-use tuanlq11\token\Token;
+use tuanlq11\ptoken\Token;
 
 /**
  * Class TokenAuthServiceProvider
  *
  * @author  tuanlq11
- * @package tuanlq11\token\providers
+ * @package tuanlq11\ptoken\providers
  */
 class TokenAuthProvider extends Token
 {

@@ -1,12 +1,12 @@
 <?php
 
-namespace tuanlq11\token\middleware;
+namespace tuanlq11\ptoken\middleware;
 
 use Phalcon\Config;
 use Phalcon\Dispatcher;
 use Phalcon\Events\Event;
 use Phalcon\Mvc\User\Plugin;
-use tuanlq11\token\Token;
+use tuanlq11\ptoken\Token;
 use Phalcon\Config\Adapter\Yaml;
 
 /**
@@ -14,7 +14,7 @@ use Phalcon\Config\Adapter\Yaml;
  *
  * GuardPlugin check token valid
  *
- * @package tuanlq11\token\middleware
+ * @package tuanlq11\ptoken\middleware
  */
 class TokenMiddleware extends Plugin
 {

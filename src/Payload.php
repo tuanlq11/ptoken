@@ -1,6 +1,6 @@
 <?php
 
-namespace tuanlq11\token;
+namespace tuanlq11\ptoken;
 
 use Phalcon\Http\Request;
 use Phalcon\Mvc\Url;

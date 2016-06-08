@@ -1,10 +1,10 @@
 <?php
-namespace tuanlq11\token\signer;
+namespace tuanlq11\ptoken\signer;
 
 use InvalidArgumentException;
 use Phalcon\Http\Request;
-use tuanlq11\token\Payload;
-use tuanlq11\token\Signer\OpenSSL\HMac;
+use tuanlq11\ptoken\Payload;
+use tuanlq11\ptoken\Signer\OpenSSL\HMac;
 
 /**
  * Created by PhpStorm.

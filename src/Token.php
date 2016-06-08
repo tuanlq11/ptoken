@@ -1,23 +1,21 @@
 <?php
 
-namespace tuanlq11\token;
+namespace tuanlq11\ptoken;
 
-use Carbon\Carbon;
 use Phalcon\Cache\Backend;
-use Phalcon\Cache\BackendInterface;
 use Phalcon\DiInterface;
 use Phalcon\Exception;
 use Phalcon\Http\Request;
 use Phalcon\Security;
 use tuanlq11\helper\Cipher;
 use tuanlq11\helper\Str;
-use tuanlq11\token\signer\Signer;
+use tuanlq11\ptoken\signer\Signer;
 
 /**
  * Class Token
  *
  * @author  tuanlq11
- * @package tuanlq11\token
+ * @package tuanlq11\ptoken
  */
 class Token
 {
