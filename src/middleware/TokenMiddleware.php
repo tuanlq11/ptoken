@@ -22,7 +22,7 @@ class TokenMiddleware extends Plugin
         $this->response->setContentType("application/json");
 
         $result = [
-            'error'   => \Config::get('token.error-code'),
+            'error'   => $this->config->tuanlq11->token->error_code,
             'message' => '',
         ];
 
