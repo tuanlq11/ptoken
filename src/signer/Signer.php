@@ -160,7 +160,7 @@ class Signer
     public function getEncoderInstance()
     {
         $alg       = $this->getHeader()['alg'];
-        $signerStr = sprintf('tuanlq11\\token\\signer\\openssl\\%s', strtoupper($alg));
+        $signerStr = sprintf('tuanlq11\\ptoken\\signer\\openssl\\%s', strtoupper($alg));
         if (class_exists($signerStr)) {
             return new $signerStr;
         }
