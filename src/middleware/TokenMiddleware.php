@@ -40,8 +40,7 @@ class TokenMiddleware extends Plugin
             return false;
         }
 
-        $tokenMgr = new Token();
-        if (!$tokenMgr->fromToken($token)) {
+        if (!$this->token->fromToken($token)) {
             $result['message'] = 'Token is invalid or exired';
 
             $this->response->setJsonContent($result)->send();
