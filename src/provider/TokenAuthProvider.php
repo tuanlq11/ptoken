@@ -1,5 +1,5 @@
 <?php
-namespace tuanlq11\token\providers;
+namespace tuanlq11\token\provider;
 
 use Phalcon\Config;
 use Phalcon\Config\Adapter\Yaml;
@@ -11,7 +11,7 @@ use tuanlq11\token\Token;
  * @author  tuanlq11
  * @package tuanlq11\token\providers
  */
-class TokenAuthServiceProvider extends Token
+class TokenAuthProvider extends Token
 {
     /**
      * TokenAuthServiceProvider constructor.
