@@ -1,3 +1,8 @@
+<<<<<<< HEAD
 .idea/*
 .idea
 vendor/*
+=======
+/cache/
+/config/development/
+>>>>>>> 96a7e1c5f94d8bf3c2534f37bd111e981f44c91c
