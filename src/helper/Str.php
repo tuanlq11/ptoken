@@ -1,5 +1,5 @@
 <?php
-namespace tuanlq11\helper;
+namespace tuanlq11\ptoken\helper;
 
 use Phalcon\Exception;
 
