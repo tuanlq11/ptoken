@@ -6,7 +6,7 @@ use Phalcon\Config\Adapter\Yaml;
 use Phalcon\Di;
 use Phalcon\DiInterface;
 use Phalcon\Security;
-use tuanlq11\helper\Cipher;
+use tuanlq11\ptoken\helper\Cipher;
 use tuanlq11\ptoken\Token;
 
 /**

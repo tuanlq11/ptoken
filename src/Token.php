@@ -7,8 +7,8 @@ use Phalcon\DiInterface;
 use Phalcon\Exception;
 use Phalcon\Http\Request;
 use Phalcon\Security;
-use tuanlq11\helper\Cipher;
-use tuanlq11\helper\Str;
+use tuanlq11\ptoken\helper\Cipher;
+use tuanlq11\ptoken\helper\Str;
 use tuanlq11\ptoken\signer\Signer;
 
 /**

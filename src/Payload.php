@@ -4,7 +4,7 @@ namespace tuanlq11\ptoken;
 
 use Phalcon\Http\Request;
 use Phalcon\Mvc\Url;
-use tuanlq11\helper\Str;
+use tuanlq11\ptoken\helper\Str;
 
 /**
  * Created by PhpStorm.
