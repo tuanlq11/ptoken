@@ -1,8 +1,6 @@
 <?php
 namespace tuanlq11\token\provider;
 
-use Phalcon\Cache\Backend;
-use Phalcon\Cache\BackendInterface;
 use Phalcon\Config;
 use Phalcon\Config\Adapter\Yaml;
 use Phalcon\Di;
