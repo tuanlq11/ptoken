@@ -21,7 +21,7 @@ class TokenAuthProvider extends Token
     public function __construct($globalConfig)
     {
         $config = new Yaml(__DIR__ . "/../config/config.yaml");
-        $config->merge($globalConfig->tuanlq11->token);
+        $config->merge($globalConfig->get("tuanlq11", new Config(["tuanlq11" => ["token" => []]])));
 
         return parent::__construct(
             $config->tuanlq11->token->alg,
