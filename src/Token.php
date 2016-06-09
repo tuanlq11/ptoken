@@ -391,7 +391,7 @@ class Token
             $remember_token = $this->generateRememberToken($uid);
             /** End */
 
-            $payload  = new Payload($uid, time() + $this->getTtl(), null, null, null, $remember_token);
+            $payload = new Payload($uid, time() + $this->getTtl(), null, null, null, $remember_token);
             $payload->generateSalt($this->getSecret());
             $newToken = $this->toToken($payload);
 
@@ -404,6 +404,32 @@ class Token
             return $newToken;
         }
 
+
+        return false;
+    }
+
+    /**
+     * Block token
+     *
+     * @param $token
+     *
+     * @return boolean
+     */
+    public function block($token)
+    {
+        $data = $this->fromTokenFull($token);
+
+        if ($data['error'] != 1) {
+            $token = $data['token'];
+
+            // Blacklist
+            $key = self::PREFIX_CACHE_KEY . $token;
+            $this->di["cache"]->save($key, [], time() + $this->getBlacklistTtl());
+
+            // End
+
+            return true;
+        }
 
         return false;
     }
