@@ -6,12 +6,6 @@ use Phalcon\Http\Request;
 use Phalcon\Mvc\Url;
 use tuanlq11\ptoken\helper\Str;
 
-/**
- * Created by PhpStorm.
- * User: tuanlq11
- * Date: 9/14/15
- * Time: 8:23 AM
- */
 class Payload
 {
 
@@ -202,7 +196,7 @@ class Payload
     {
         $data = [
             'rnd0'   => Str::str_random(rand(16, 64)),
-            'time'   => time(),
+            'time'   => uniqid($secret),
             'secret' => $secret,
             'rnd1'   => Str::str_random(rand(16, 64)),
         ];

@@ -7,6 +7,7 @@ use Phalcon\DiInterface;
 use Phalcon\Exception;
 use Phalcon\Http\Request;
 use Phalcon\Security;
+use tuanlq11\ptoken\helper\Carbon;
 use tuanlq11\ptoken\helper\Cipher;
 use tuanlq11\ptoken\helper\Str;
 use tuanlq11\ptoken\signer\Signer;
@@ -215,7 +216,7 @@ class Token
      */
     public function generateRememberToken($uid = '')
     {
-        $this->setRememberToken(md5(time() . $uid . Str::str_random()));
+        $this->setRememberToken(md5(microtime() . $uid . Str::str_random()));
 
         return $this->getRememberToken();
     }
