@@ -3,10 +3,7 @@
 namespace tuanlq11\ptoken\middleware;
 
 use Phalcon\Config;
-use Phalcon\Dispatcher;
-use Phalcon\Events\Event;
 use Phalcon\Mvc\User\Plugin;
-use tuanlq11\ptoken\Token;
 use Phalcon\Config\Adapter\Yaml;
 
 /**
@@ -18,7 +15,7 @@ use Phalcon\Config\Adapter\Yaml;
  */
 class TokenMiddleware extends Plugin
 {
-    public function beforeExecuteRoute(Event $event, Dispatcher $dispatcher)
+    public function beforeExecuteRoute($event, $dispatcher)
     {
         $config = new Yaml(__DIR__ . "/../config/config.yaml");
         $config->tuanlq11->merge($this->config->get("tuanlq11", new Config(["tuanlq11" => ["token" => []]])));
