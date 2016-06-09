@@ -7,7 +7,6 @@ use Phalcon\DiInterface;
 use Phalcon\Exception;
 use Phalcon\Http\Request;
 use Phalcon\Security;
-use tuanlq11\ptoken\helper\Carbon;
 use tuanlq11\ptoken\helper\Cipher;
 use tuanlq11\ptoken\helper\Str;
 use tuanlq11\ptoken\signer\Signer;
@@ -316,7 +315,7 @@ class Token
 
     /**
      * Response User && Remember Token from token
-     * error code: 0 - pass; 1 - invalid; 2 - remember
+     * error code: 0 - pass; 1 - invalid; 2 - remember; 3 - Decrypt problem; 4 - Blacklist; 5 - Signer error
      *
      * @param $token
      *
@@ -325,7 +324,7 @@ class Token
     public function fromTokenFull($token = null)
     {
         $key    = self::PREFIX_CACHE_KEY . $token;
-        $result = ['error' => 1, 'data' => null];
+        $result = ['error' => 1, 'uid' => null, 'token' => null];
 
         $token          = $token ? $token : $this->request->get('token');
         $remember_token = $this->request->get('remember_token', null, false);
@@ -333,15 +332,21 @@ class Token
         try {
             $token = $this->isEncrypt() ? $this->cipher->decrypt($token) : $token;
         } catch (Exception $e) {
-            return false;
+            $result['error'] = 3;
+
+            return $result;
         }
 
         if ($this->di["cache"]->exists($key)) {
-            return false;
+            $result['error'] = 4;
+
+            return $result;
         }
 
         if (!($signer = Signer::getInstance($token))) {
-            return false;
+            $result['error'] = 5;
+
+            return $result;
         }
 
         $payloadResult = $signer->verify($this->getSecret(), $remember_token);
@@ -349,7 +354,8 @@ class Token
         $payload = $payloadResult['data'];
         if ($payloadResult['error'] == 0) {
             $result['error'] = 0;
-            $result['data']  = $payload->getUid();
+            $result['uid']   = $payload->getUid();
+            $result['token'] = $token;
 
             return $result;
         }
@@ -357,7 +363,8 @@ class Token
         /** Use remember token */
         if ($payloadResult['error'] == 2) {
             $result['error'] = 2;
-            $result['data']  = $payload->getUid();
+            $result['uid']   = $payload->getUid();
+            $result['token'] = $token;
 
             return $result;
         }
@@ -368,33 +375,35 @@ class Token
     }
 
     /**
-     * @param $token
+     * @param $rawToken
      *
      * @return bool
      */
-    public function refresh($token)
+    public function refresh($rawToken)
     {
-        $valid = $this->fromTokenFull($token);
+        $data = $this->fromTokenFull($rawToken);
 
-        if ($valid['error'] != 1) {
-            $user = $valid['data'];
-            $uid  = $user->{$this->getIdentify()};
+        if ($data['error'] != 1) {
+            $token = $data['token'];
+            $uid   = $data['uid'];
 
             /** Remember Token */
             $remember_token = $this->generateRememberToken($uid);
             /** End */
 
             $payload  = new Payload($uid, time() + $this->getTtl(), null, null, null, $remember_token);
+            $payload->generateSalt($this->getSecret());
             $newToken = $this->toToken($payload);
 
             // Blacklist
             $key = self::PREFIX_CACHE_KEY . $token;
-            $this->di["cache"]->save($key, [], Carbon::now()->addSecond($this->getBlacklistTtl()));
+            $this->di["cache"]->save($key, [], time() + $this->getBlacklistTtl());
 
             // End
 
             return $newToken;
         }
+
 
         return false;
     }
