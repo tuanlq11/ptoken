@@ -3,6 +3,8 @@
 namespace tuanlq11\ptoken\middleware;
 
 use Phalcon\Config;
+use Phalcon\Events\Event;
+use Phalcon\Mvc\Dispatcher;
 use Phalcon\Mvc\User\Plugin;
 use Phalcon\Config\Adapter\Yaml;
 
@@ -15,6 +17,14 @@ use Phalcon\Config\Adapter\Yaml;
  */
 class TokenMiddleware extends Plugin
 {
+    /**
+     * Middleware gateway check token authenticate
+     *
+     * @param $event      Event
+     * @param $dispatcher Dispatcher
+     *
+     * @return bool
+     */
     public function beforeExecuteRoute($event, $dispatcher)
     {
         $config = new Yaml(__DIR__ . "/../config/config.yaml");
@@ -37,12 +47,14 @@ class TokenMiddleware extends Plugin
             return false;
         }
 
-        if (!$this->token->fromToken($token)) {
+        if (!($uid = $this->token->fromToken($token))) {
             $result['message'] = 'Token is invalid or exired';
 
             $this->response->setJsonContent($result)->send();
 
             return false;
         }
+
+        return $uid;
     }
 }
