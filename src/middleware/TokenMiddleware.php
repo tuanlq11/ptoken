@@ -37,7 +37,7 @@ class TokenMiddleware extends Plugin
             'message' => '',
         ];
 
-        $token = $this->request->get('token');
+        $token = $this->request->getHeader('token');
 
         if (!$token) {
             $result['message'] = 'Token is empty';
