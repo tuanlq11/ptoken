@@ -285,7 +285,10 @@ class Token
      */
     public function fromToken($token = null)
     {
-        $token = $token ? $token : $this->request->get('token');
+        if (!($token = $token ? $token : $this->request->getHeader('token'))) {
+            $token = $this->request->get('token');
+        }
+
 
         try {
             $token = $this->isEncrypt() ? $this->cipher->decrypt($token) : $token;
@@ -326,7 +329,9 @@ class Token
         $key    = self::PREFIX_CACHE_KEY . $token;
         $result = ['error' => 1, 'uid' => null, 'token' => null];
 
-        $token          = $token ? $token : $this->request->get('token');
+        if (!($token = $token ? $token : $this->request->get('token'))) {
+            $token = $this->request->get('token');
+        }
         $remember_token = $this->request->get('remember_token', null, false);
 
         try {
