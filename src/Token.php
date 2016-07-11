@@ -281,6 +281,8 @@ class Token
      *
      * @param $token
      *
+     * @deprecated
+     *
      * @return bool
      */
     public function fromToken($token = null)
